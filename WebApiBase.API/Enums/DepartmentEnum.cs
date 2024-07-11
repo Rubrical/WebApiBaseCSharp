@@ -2,9 +2,9 @@
 
 public enum DepartmentEnum
 {
-    Rh,
-    Financial,
-    Purchasing,
-    Service,
-    Janitorial
+    Rh = 1,
+    Financial = 2,
+    Purchasing = 3,
+    Service = 4,
+    Janitorial =5
 }

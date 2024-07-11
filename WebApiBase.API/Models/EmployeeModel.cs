@@ -12,7 +12,7 @@ namespace WebApiBase.Models
         public DepartmentEnum Department { get; set; }
         public ShiftEnum Shift { get; set; }
         public bool Active { get; set; } = true;
-        public DateTime DateCreation { get; set; } = DateTime.Now;
-        public DateTime UpdateDate { get; set; } = DateTime.Now;
+        public DateTime DateCreation { get; set; }
+        public DateTime UpdateDate { get; set; }
     }
 }
