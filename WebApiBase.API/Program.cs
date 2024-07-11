@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApiBase.Data;
+using WebApiBase.Services.EmployeeService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+// services subscribe
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 var app = builder.Build();
 

@@ -20,14 +20,22 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-      <Folder Include="Services\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+      <Content Remove="IoC\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="IoC\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="IoC\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="IoC\**" />
     </ItemGroup>
 
 </Project>

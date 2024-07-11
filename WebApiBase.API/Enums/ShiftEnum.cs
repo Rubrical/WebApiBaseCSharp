@@ -5,5 +5,4 @@ public enum ShiftEnum
     Morning,
     Afternoon,
     Evening
-    
 }

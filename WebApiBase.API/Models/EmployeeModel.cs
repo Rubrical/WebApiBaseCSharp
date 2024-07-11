@@ -10,9 +10,9 @@ namespace WebApiBase.Models
         public string Name { get; set; }
         public string LastName { get; set; }
         public DepartmentEnum Department { get; set; }
-        public bool Active { get; set; }
-        public string Shift { get; set; }
-        public DateTime DateCreation { get; set; } = DateTime.Now.ToLocalTime();
-        public DateTime UpdateDate { get; set; } = DateTime.Now.ToLocalTime();
+        public ShiftEnum Shift { get; set; }
+        public bool Active { get; set; } = true;
+        public DateTime DateCreation { get; set; } = DateTime.Now;
+        public DateTime UpdateDate { get; set; } = DateTime.Now;
     }
 }
