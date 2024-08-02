@@ -2,27 +2,28 @@
 using WebApiBase.Data;
 using WebApiBase.Enums;
 using WebApiBase.Exceptions;
+using WebApiBase.Infrastructure;
 using WebApiBase.Models;
 
 namespace WebApiBase.Services.EmployeeService;
 
-public class EmployeeService(AppDbContext context) : IEmployeeService
+public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEmployeeService
 {
-    public async Task<ServiceResponse<List<EmployeeModel>>> GetAllAsync()
+    public async Task<ServiceResponse<IEnumerable<EmployeeModel>>> GetPaginateAsync(int pageNumber, int pageSize)
     {
-        var employees = await context.Employees.AsNoTracking().ToListAsync();
-
+        // var employees = await context.Employees.AsNoTracking().ToListAsync();
+        var employees = await unitOfWork.EmployeesRepository.GetPaginateAsync(pageNumber, pageSize);
         if (employees is null)
         {
             throw new WebApiBaseException("It was not possible to connect to database", StatusCodes.Status500InternalServerError);
         }
 
-        if (employees.Count == 0)
+        if (!employees.Any())
         {
             throw new WebApiBaseException("No registries found", StatusCodes.Status500InternalServerError);
         }
 
-        var response = new ServiceResponse<List<EmployeeModel>>
+        var response = new ServiceResponse<IEnumerable<EmployeeModel>>
         {
             Data = employees,
             Success = true
@@ -62,7 +63,9 @@ public class EmployeeService(AppDbContext context) : IEmployeeService
 
     public async Task<ServiceResponse<EmployeeModel>> GetByIdAsync(int id)
     {
-        var employee = await context.Employees.FindAsync(id);
+        // var employee = await context.Employees.FindAsync(id);
+        var employee = await unitOfWork.EmployeesRepository.GetByIdAsync(id);
+        
         if (employee == null)
         {
             throw new WebApiBaseException("Employee not found", StatusCodes.Status404NotFound);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApiBase.Data;
 using WebApiBase.Handlers;
+using WebApiBase.Infrastructure;
 using WebApiBase.Services.EmployeeService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 // services subscribe
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 var app = builder.Build();
