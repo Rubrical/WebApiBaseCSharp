@@ -97,7 +97,8 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context, IMapp
 
         var response = new ServiceResponse<EmployeeModel>()
         {
-            Data = existingEmployee
+            Data = existingEmployee,
+            Success = true
         };
 
         return response;
@@ -138,7 +139,8 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context, IMapp
 
         var response = new ServiceResponse<EmployeeModel>()
         {
-            Data = employee
+            Data = employee,
+            Success = true
         };
 
         return response;
