@@ -24,9 +24,11 @@ public class BaseRepository<T>(AppDbContext context) : IBaseRepository<T> where 
     }
 
 
-    public void Update(T entity)
+    public async Task<int> Update(T entity)
     {
         context.Set<T>().Update(entity);
+        var saveChangesAsync = await context.SaveChangesAsync();
+        return saveChangesAsync;
     }
 
     public void Delete(T entity)

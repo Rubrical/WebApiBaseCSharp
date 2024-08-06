@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
 using WebApiBase.Data;
+using WebApiBase.Data.DTOs;
 using WebApiBase.Enums;
 using WebApiBase.Exceptions;
 using WebApiBase.Infrastructure;
@@ -7,25 +8,26 @@ using WebApiBase.Models;
 
 namespace WebApiBase.Services.EmployeeService;
 
-public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEmployeeService
+public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context, IMapper mapper) : IEmployeeService
 {
     public async Task<ServiceResponse<IEnumerable<EmployeeModel>>> GetPaginateAsync(int pageNumber, int pageSize)
     {
-        // var employees = await context.Employees.AsNoTracking().ToListAsync();
         var employees = await unitOfWork.EmployeesRepository.GetPaginateAsync(pageNumber, pageSize);
         if (employees is null)
         {
-            throw new WebApiBaseException("It was not possible to connect to database", StatusCodes.Status500InternalServerError);
+            throw new WebApiBaseException("It was not possible to connect to database",
+                StatusCodes.Status500InternalServerError);
         }
 
-        if (!employees.Any())
+        var employeeModels = employees.ToList();
+        if (employeeModels.Count == 0)
         {
             throw new WebApiBaseException("No registries found", StatusCodes.Status500InternalServerError);
         }
 
         var response = new ServiceResponse<IEnumerable<EmployeeModel>>
         {
-            Data = employees,
+            Data = employeeModels,
             Success = true
         };
 
@@ -65,7 +67,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEm
     {
         // var employee = await context.Employees.FindAsync(id);
         var employee = await unitOfWork.EmployeesRepository.GetByIdAsync(id);
-        
+
         if (employee == null)
         {
             throw new WebApiBaseException("Employee not found", StatusCodes.Status404NotFound);
@@ -79,46 +81,41 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEm
         return response;
     }
 
-    public async Task<ServiceResponse<EmployeeModel>> UpdateAsync(EmployeeModel editedEmployee)
+    public async Task<ServiceResponse<EmployeeModel>> UpdateAsync(EditedEmployeeDto editedEmployee)
     {
-        var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == editedEmployee.Id);
-
-        if (employee == null)
+        var existingEmployee = await unitOfWork.EmployeesRepository.GetByIdAsync(editedEmployee.Id);
+        
+        if (existingEmployee == null)
         {
             throw new WebApiBaseException("User not found", StatusCodes.Status404NotFound);
         }
 
-        employee.Name = editedEmployee.Name;
-        employee.LastName = editedEmployee.LastName;
-        employee.Active = editedEmployee.Active;
-        employee.Department = editedEmployee.Department;
-        employee.Shift = editedEmployee.Shift;
+        mapper.Map(editedEmployee, existingEmployee);
+        existingEmployee.UpdateDate = DateTime.Now.ToLocalTime();
 
-        editedEmployee.UpdateDate = DateTime.Now.ToLocalTime();
-
-        await context.SaveChangesAsync();
+        await unitOfWork.EmployeesRepository.Update(existingEmployee);
 
         var response = new ServiceResponse<EmployeeModel>()
         {
-            Data = editedEmployee
+            Data = existingEmployee
         };
 
         return response;
     }
 
-    public async Task<ServiceResponse<List<EmployeeModel>>> DeleteAsync(int id)
+    public async Task<ServiceResponse<IEnumerable<EmployeeModel>>> DeleteAsync(int id)
     {
-        var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == id);
+        var employee = await unitOfWork.EmployeesRepository.GetByIdAsync(id);
         if (employee == null)
         {
             throw new WebApiBaseException("User not found", StatusCodes.Status404NotFound);
         }
 
-        context.Employees.Remove(employee);
+        unitOfWork.EmployeesRepository.Delete(employee);
         await context.SaveChangesAsync();
 
-        var employeesList = await context.Employees.AsNoTracking().ToListAsync();
-        var response = new ServiceResponse<List<EmployeeModel>>()
+        var employeesList = await unitOfWork.EmployeesRepository.GetPaginateAsync(1, 10);
+        var response = new ServiceResponse<IEnumerable<EmployeeModel>>()
         {
             Data = employeesList
         };
@@ -128,7 +125,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEm
 
     public async Task<ServiceResponse<EmployeeModel>> InactivateAsync(int id)
     {
-        var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == id);
+        var employee = await unitOfWork.EmployeesRepository.GetByIdAsync(id);
         if (employee == null)
         {
             throw new WebApiBaseException("User not found", StatusCodes.Status404NotFound);
@@ -137,7 +134,7 @@ public class EmployeeService(IUnitOfWork unitOfWork, AppDbContext context) : IEm
         employee.Active = false;
         employee.UpdateDate = DateTime.Now.ToLocalTime();
 
-        await context.SaveChangesAsync();
+        await unitOfWork.EmployeesRepository.Update(employee);
 
         var response = new ServiceResponse<EmployeeModel>()
         {

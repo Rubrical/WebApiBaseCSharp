@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using WebApiBase.Data.DTOs;
 using WebApiBase.Models;
 using WebApiBase.Services.EmployeeService;
 
@@ -6,7 +8,7 @@ namespace WebApiBase.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EmployeeController(IEmployeeService employeeService) : ControllerBase
+public class EmployeeController(IEmployeeService employeeService, IMapper mapper) : ControllerBase
 {
     /// <summary>
     /// Resgata todos os empregados do banco por páginas
@@ -17,25 +19,26 @@ public class EmployeeController(IEmployeeService employeeService) : ControllerBa
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> GetPaginateAsync(int pageNumber, int pageSize)
+    public async Task<IActionResult> GetPaginateAsync([FromQuery] int pageNumber, [FromQuery] int pageSize)
     {
         var response = await employeeService.GetPaginateAsync(pageNumber, pageSize);
         return Ok(response);
     }
-    
+
     /// <summary>
     /// Cadastra novo empregado
     /// </summary>
-    /// <param name="employeeModel"></param>
     /// <returns></returns>
     [HttpPost]
-    [ProducesResponseType(typeof(EmployeeModel), 201)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Create([FromBody] EmployeeModel employeeModel)
+    [ProducesResponseType(typeof(EmployeeModel), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create([FromQuery] EmployeeDTO employee)
     {
-        var response = await employeeService.CreateNewAsync(employeeModel);
-        return Created($"api/Employees/{employeeModel.Id}", response);
+        var newEmployee = mapper.Map<EmployeeModel>(employee);
+        var response = await employeeService.CreateNewAsync(newEmployee);
+        
+        return Created($"api/employee/{response.Data.Id}", response);
     }
 
     /// <summary>
@@ -55,15 +58,16 @@ public class EmployeeController(IEmployeeService employeeService) : ControllerBa
     /// <summary>
     /// Atualiza empregado
     /// </summary>
-    /// <param name="employeeModel"></param>
     /// <returns></returns>
     [HttpPut]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateAsync(EmployeeModel employeeModel)
+    public async Task<IActionResult> UpdateAsync(EditedEmployeeDto editedEmployeeDto)
     {
-        var response = await employeeService.UpdateAsync(employeeModel);
+        // var employeeModel = mapper.Map<EmployeeModel>(editedEmployeeDto);
+        var response = await employeeService.UpdateAsync(editedEmployeeDto);
+        
         return Ok(response);
     }
     

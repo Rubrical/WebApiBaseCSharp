@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using WebApiBase.Data;
 using WebApiBase.Handlers;
+using WebApiBase.Mapping;
 using WebApiBase.Services.EmployeeService;
 
 namespace WebApiBase.Infrastructure.IOC;
@@ -15,6 +16,7 @@ public class Startup(IConfiguration configuration)
         services.AddEndpointsApiExplorer();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
+        services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo{Title = "Web Api Base", Version = "v1"});
